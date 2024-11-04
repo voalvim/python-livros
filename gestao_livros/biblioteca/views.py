@@ -25,3 +25,10 @@ class LivroViewSet(viewsets.ModelViewSet):
     serializer_class = LivroSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['titulo', 'autor__nome']
+
+    @action(detail=True, methods=['patch'])
+    def atualizar_titulo(self, request, pk=None):
+        livro = self.get_object()
+        livro.titulo = request.data.get('titulo')
+        livro.save()
+        return Response({'status': 'Título atualizado!'})
