@@ -8,6 +8,7 @@ from .models import Autor, Livro
 from .serializers import AutorSerializer, LivroSerializer
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, DjangoModelPermissions
+from datetime import datetime, timedelta
 
 class AutorViewSet(viewsets.ModelViewSet):
     queryset = Autor.objects.all()
@@ -35,3 +36,10 @@ class LivroViewSet(viewsets.ModelViewSet):
         livro.titulo = request.data.get('titulo')
         livro.save()
         return Response({'status': 'Título atualizado!'})
+
+    @action(detail=False, methods=['get'])
+    def publicados_ultimo_ano(self, request):
+        um_ano_atras = datetime.now() - timedelta(days=365)
+        livros = Livro.objects.filter(data_publicacao__gte=um_ano_atras)
+        serializer = self.get_serializer(livros, many=True)
+        return Response(serializer.data)
