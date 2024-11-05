@@ -9,6 +9,7 @@ from .serializers import AutorSerializer, LivroSerializer
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, DjangoModelPermissions
 from datetime import datetime, timedelta
+from django.db.models import Count
 
 class AutorViewSet(viewsets.ModelViewSet):
     queryset = Autor.objects.all()
@@ -43,3 +44,12 @@ class LivroViewSet(viewsets.ModelViewSet):
         livros = Livro.objects.filter(data_publicacao__gte=um_ano_atras)
         serializer = self.get_serializer(livros, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        total_livros = Livro.objects.count()
+        livros_por_autor = Livro.objects.values('autor__nome').annotate(total=Count('autor'))
+        return Response({
+            'total_livros': total_livros,
+            'livros_por_autor': livros_por_autor
+        })
